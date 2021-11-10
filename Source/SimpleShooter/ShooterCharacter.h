@@ -15,6 +15,7 @@ public:
 	// Sets default values for this character's properties
 	AShooterCharacter();
 
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -29,4 +30,15 @@ public:
 private:
 	void MoveForward(float AxisValue);
 	void MoveRight(float AxisValue);
+	void OnWalk();
+	void OnStopWalk();
+	void OnSprint();
+	void OnStopSprint();
+	bool bIsWalking;
+	bool bIsSprinting;
+
+	UPROPERTY(EditAnywhere, Category = Modifiers)
+	float WalkSpeed = 0.3;
+	UPROPERTY(EditAnywhere, Category = Modifiers)
+	float SprintSpeed = 1;
 };

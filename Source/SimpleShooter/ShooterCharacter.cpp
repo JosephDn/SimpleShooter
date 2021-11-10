@@ -35,14 +35,40 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &ACharacter::StopJumping);
 	// referencing ACharacter.h directly, using built in jump function
+	PlayerInputComponent->BindAction(TEXT("Walk"), IE_Pressed, this, &AShooterCharacter::OnWalk);
+	PlayerInputComponent->BindAction(TEXT("Walk"), IE_Released, this, &AShooterCharacter::OnStopWalk);
+}
+
+void AShooterCharacter::OnWalk()
+{
+	bIsWalking = true;
+}
+
+void AShooterCharacter::OnStopWalk()
+{
+	bIsWalking = false;
 }
 
 void AShooterCharacter::MoveForward(float AxisValue)
 {
-	AddMovementInput(GetActorForwardVector() * AxisValue);
+	if (bIsWalking)
+	{
+		AddMovementInput(GetActorForwardVector() * AxisValue * WalkSpeed);
+	}
+	else
+	{
+		AddMovementInput(GetActorForwardVector() * AxisValue);
+	}
 }
 
 void AShooterCharacter::MoveRight(float AxisValue)
 {
-	AddMovementInput(GetActorRightVector() * AxisValue);
+	if (bIsWalking)
+	{
+		AddMovementInput(GetActorRightVector() * AxisValue * WalkSpeed);
+	}
+	else
+	{
+		AddMovementInput(GetActorRightVector() * AxisValue);
+	}
 }

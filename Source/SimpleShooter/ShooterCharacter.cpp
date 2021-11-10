@@ -3,6 +3,8 @@
 
 #include "ShooterCharacter.h"
 
+#include "Gun.h"
+
 // Sets default values
 AShooterCharacter::AShooterCharacter()
 {
@@ -14,6 +16,12 @@ AShooterCharacter::AShooterCharacter()
 void AShooterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+	GetMesh()->HideBoneByName(TEXT("weapon_r"), EPhysBodyOp::PBO_None);
+	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform,
+	                       TEXT("WeaponSocket"));
+	Gun->SetOwner(this);
 }
 
 // Called every frame
@@ -37,6 +45,10 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	// referencing ACharacter.h directly, using built in jump function
 	PlayerInputComponent->BindAction(TEXT("Walk"), IE_Pressed, this, &AShooterCharacter::OnWalk);
 	PlayerInputComponent->BindAction(TEXT("Walk"), IE_Released, this, &AShooterCharacter::OnStopWalk);
+	PlayerInputComponent->BindAction(TEXT("Sprint"), IE_Pressed, this, &AShooterCharacter::OnSprint);
+	PlayerInputComponent->BindAction(TEXT("Sprint"), IE_Released, this, &AShooterCharacter::OnStopSprint);
+	PlayerInputComponent->BindAction(TEXT("Shoot"), IE_Pressed, this, &AShooterCharacter::Shoot);
+	//PlayerInputComponent->BindAction(TEXT("Shoot"), IE_Released, this, &AShooterCharacter::OnStopShoot);
 }
 
 void AShooterCharacter::OnWalk()
@@ -49,26 +61,64 @@ void AShooterCharacter::OnStopWalk()
 	bIsWalking = false;
 }
 
+void AShooterCharacter::OnSprint()
+{
+	bIsSprinting = true;
+}
+
+void AShooterCharacter::OnStopSprint()
+{
+	bIsSprinting = false;
+}
+
 void AShooterCharacter::MoveForward(float AxisValue)
 {
-	if (bIsWalking)
+	//UE_LOG(LogTemp, Warning, TEXT("AxisValue = %f"), AxisValue);
+	if (AxisValue == 0) { bIsJogging = false; }
+	else if (bIsWalking)
 	{
 		AddMovementInput(GetActorForwardVector() * AxisValue * WalkSpeed);
 	}
+	else if (bIsSprinting)
+	{
+		AddMovementInput(GetActorForwardVector() * AxisValue * SprintSpeed);
+	}
+	else if (bIsMovingRight)
+	{
+		AddMovementInput(GetActorForwardVector() * AxisValue * (JogSpeed / 1.4));
+		bIsJogging = true;
+	}
 	else
 	{
-		AddMovementInput(GetActorForwardVector() * AxisValue);
+		AddMovementInput(GetActorForwardVector() * AxisValue * JogSpeed);
+		bIsJogging = true;
 	}
 }
 
 void AShooterCharacter::MoveRight(float AxisValue)
 {
-	if (bIsWalking)
+	if (AxisValue == 0) { bIsMovingRight = false; }
+	else if (bIsWalking)
 	{
 		AddMovementInput(GetActorRightVector() * AxisValue * WalkSpeed);
 	}
+	else if (bIsSprinting)
+	{
+		AddMovementInput(GetActorRightVector() * AxisValue * SprintSpeed);
+	}
+	else if (bIsJogging)
+	{
+		AddMovementInput(GetActorRightVector() * AxisValue * (JogSpeed / 1.4));
+		bIsMovingRight = true;
+	}
 	else
 	{
-		AddMovementInput(GetActorRightVector() * AxisValue);
+		AddMovementInput(GetActorRightVector() * AxisValue * JogSpeed);
+		bIsMovingRight = true;
 	}
+}
+
+void AShooterCharacter::Shoot()
+{
+	Gun->PullTrigger();
 }

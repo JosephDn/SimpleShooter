@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "ShooterCharacter.generated.h"
 
+class AGun;
+
 UCLASS()
 class SIMPLESHOOTER_API AShooterCharacter : public ACharacter
 {
@@ -30,15 +32,29 @@ public:
 private:
 	void MoveForward(float AxisValue);
 	void MoveRight(float AxisValue);
+	void Shoot();
 	void OnWalk();
 	void OnStopWalk();
 	void OnSprint();
 	void OnStopSprint();
 	bool bIsWalking;
+	bool bIsJogging;
 	bool bIsSprinting;
+	bool bIsMovingRight;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AGun> GunClass;
+
+	UPROPERTY()
+	AGun* Gun;
 
 	UPROPERTY(EditAnywhere, Category = Modifiers)
-	float WalkSpeed = 0.3;
+	float WalkSpeed = 0.25;
+
+	UPROPERTY(EditAnywhere, Category = Modifiers)
+	float JogSpeed = 0.7;
+
 	UPROPERTY(EditAnywhere, Category = Modifiers)
 	float SprintSpeed = 1;
+	// SprintSpeed is unnecessary  
 };
